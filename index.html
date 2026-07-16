@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Happy Birthday Qalbi</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .glass-card {
+      background: rgba(255,255,255,0.7);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.5);
+      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1);
+    }
+    .animate-fade-up { animation: fadeUp 0.7s ease-out both; }
+    .animate-fade-down { animation: fadeDown 0.7s ease-out both; }
+    .animate-bounce-in { animation: bounceIn 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) both; }
+    .animate-heartbeat { animation: heartbeat 1.5s ease-in-out infinite; }
+    .animate-float { animation: float 20s ease-in-out infinite; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeDown { from { opacity: 0; transform: translateY(-30px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes bounceIn { 0% { opacity: 0; transform: scale(0.3); } 50% { transform: scale(1.05); } 70% { transform: scale(0.9); } 100% { opacity: 1; transform: scale(1); } }
+    @keyframes heartbeat { 0%,100% { transform: scale(1); } 14% { transform: scale(1.2); } 28% { transform: scale(1); } 42% { transform: scale(1.2); } 70% { transform: scale(1); } }
+    @keyframes float { 0%,100% { transform: translateY(0) rotate(0deg); } 33% { transform: translateY(-20px) rotate(5deg); } 66% { transform: translateY(10px) rotate(-3deg); } }
+    .btn-primary {
+      background: linear-gradient(to right, #9333ea, #ec4899);
+      color: white;
+      font-weight: 600;
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+      width: 100%;
+      font-size: 1rem;
+      box-shadow: 0 10px 15px -3px rgba(147,51,234,0.2);
+      transition: all 0.3s;
+      border: none;
+      cursor: pointer;
+    }
+    .btn-primary:hover:not(:disabled) { background: linear-gradient(to right, #7e22ce, #db2777); box-shadow: 0 20px 25px -5px rgba(147,51,234,0.25); transform: scale(1.02); }
+    .btn-primary:active:not(:disabled) { transform: scale(0.98); }
+    .btn-primary:disabled { opacity: 0.4; transform: none; cursor: not-allowed; }
+    .progress-bar { height: 0.75rem; border-radius: 9999px; background: #e5e7eb; overflow: hidden; }
+    .progress-fill { height: 100%; border-radius: 9999px; background: linear-gradient(to right, #9333ea, #ec4899); transition: width 1s linear; }
+    .step-card { display: flex; align-items: center; gap: 1rem; padding: 1rem; border-radius: 0.75rem; transition: all 0.5s; border: 1px solid #f3f4f6; background: rgba(249,250,251,0.5); }
+    .step-card.active { background: linear-gradient(to right, #faf5ff, #fdf2f8); border-color: #e9d5ff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .step-card.completed { background: #f0fdf4; border-color: #bbf7d0; }
+    .step-icon { flex-shrink: 0; border-radius: 9999px; padding: 0.625rem; background: #e5e7eb; color: #9ca3af; transition: all 0.5s; }
+    .step-icon.active { background: linear-gradient(to right, #9333ea, #ec4899); color: white; box-shadow: 0 4px 6px -1px rgba(147,51,234,0.2); }
+    .step-icon.completed { background: #22c55e; color: white; }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body class="min-h-screen relative" style="background: linear-gradient(to bottom right, #fff1f2, #faf5ff, #eef2ff);">
+  <audio id="bgMusic" loop></audio>
+  <audio id="clickSound" src="https://assets.mixkit.co/sfx/preview/mixkit-positive-interface-beep-221.mp3"></audio>
+  <audio id="successSound" src="https://assets.mixkit.co/sfx/preview/mixkit-magical-coin-win-1936.mp3"></audio>
+
+  <!-- Mute Button -->
+  <div class="fixed top-4 right-4 z-50">
+    <button id="muteBtn" class="bg-white/80 backdrop-blur-sm rounded-full p-3 border border-gray-200 shadow-md hover:shadow-lg transition-all">
+      <svg id="volumeOn" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+      <svg id="volumeOff" class="hidden" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+    </button>
+  </div>
+
+  <!-- Floating Particles -->
+  <div id="particles" class="absolute inset-0 overflow-hidden pointer-events-none"></div>
+
+  <!-- SCREEN 1: Claim -->
+  <div id="screen1" class="relative z-10 min-h-screen flex flex-col items-center justify-center p-4 sm:p-6">
+    <div class="max-w-lg w-full text-center space-y-8">
+      <div class="flex justify-center items-center gap-4 animate-fade-down">
+        <div class="relative">
+          <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#9333ea" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4h3l2 3h13l2-3h1"/><path d="M2 10h20v4a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-4Z"/><path d="M2 16h20"/><path d="M9.5 22v-4"/><path d="M14.5 22v-4"/><path d="M12 2v2"/></svg>
+          <svg class="absolute -top-1 -right-1 animate-pulse" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="#facc15" stroke="#facc15" stroke-width="2"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+        </div>
+        <svg class="animate-heartbeat" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="#f472b6" stroke="#f472b6" stroke-width="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+        <div class="relative">
+          <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"/></svg>
+          <svg class="absolute -top-1 -left-1 animate-pulse" style="animation-delay:0.5s" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="#facc15" stroke="#facc15" stroke-width="2"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+        </div>
+      </div>
+      <div class="space-y-3 animate-fade-up" style="animation-delay:0.2s">
+        <h1 class="text-4xl sm:text-5xl font-bold" style="background: linear-gradient(to right, #9333ea, #ec4899, #f43f5e); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Hey Qalbi</h1>
+        <p class="text-lg sm:text-xl text-gray-600">A special birthday surprise awaits you</p>
+      </div>
+      <div class="animate-fade-up" style="animation-delay:0.4s">
+        <div id="airdropCard" class="glass-card rounded-2xl p-6 sm:p-8 space-y-6">
+          <div class="space-y-3">
+            <div id="step1Card" class="step-card active">
+              <div id="step1Icon" class="step-icon active">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+              </div>
+              <div class="flex-1 min-w-0">
+                <h3 id="step1Title" class="font-semibold text-sm sm:text-base text-gray-800">Begin the Journey</h3>
+                <p id="step1Desc" class="text-xs sm:text-sm text-gray-500">Tap to start your special experience</p>
+              </div>
+              <svg id="step1Chevron" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2" class="animate-pulse"><path d="m9 18 6-6-6-6"/></svg>
+              <svg id="step1Check" class="hidden" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div id="step2Card" class="step-card">
+              <div id="step2Icon" class="step-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>
+              </div>
+              <div class="flex-1 min-w-0">
+                <h3 id="step2Title" class="font-semibold text-sm sm:text-base text-gray-400">Verify Identity</h3>
+                <p id="step2Desc" class="text-xs sm:text-sm text-gray-300">Answer a question to prove it's you</p>
+              </div>
+              <svg id="step2Chevron" class="hidden animate-pulse" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+              <svg id="step2Check" class="hidden" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div id="step3Card" class="step-card">
+              <div id="step3Icon" class="step-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"/></svg>
+              </div>
+              <div class="flex-1 min-w-0">
+                <h3 id="step3Title" class="font-semibold text-sm sm:text-base text-gray-400">Claim Gift</h3>
+                <p id="step3Desc" class="text-xs sm:text-sm text-gray-300">Wait while we prepare your special gift</p>
+              </div>
+              <svg id="step3Chevron" class="hidden" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+              <svg id="step3Check" class="hidden" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+          </div>
+
+          <!-- Step 1 Content -->
+          <div id="step1Content">
+            <button id="beginBtn" class="btn-primary">
+              <span class="flex items-center justify-center gap-2">Begin the Journey <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg></span>
+            </button>
+          </div>
+
+          <!-- Step 2 Content -->
+          <div id="step2Content" class="hidden space-y-4 animate-fade-up">
+            <div class="space-y-2">
+              <label class="text-sm font-medium text-gray-700">When is Umri's Birthday?</label>
+              <input id="birthdayInput" type="text" placeholder="1st January" class="w-full border border-purple-200 rounded-xl px-4 py-3 text-sm sm:text-base bg-purple-50/50 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent transition-all placeholder:text-gray-300" />
+              <div id="answerError" class="hidden items-start gap-2 text-red-500 text-sm mt-2 animate-fade-up">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mt-0.5 shrink-0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <span id="answerErrorText"></span>
+              </div>
+            </div>
+            <button id="verifyBtn" class="btn-primary" disabled>
+              <span class="flex items-center justify-center gap-2">Verify <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg></span>
+            </button>
+          </div>
+
+          <!-- Step 3 Content -->
+          <div id="step3Content" class="hidden space-y-4">
+            <div class="progress-bar"><div id="progressFill" class="progress-fill" style="width:0%"></div></div>
+            <div class="flex items-center justify-center gap-2 text-sm text-gray-500">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <span id="timerText">Claiming in: 0:10</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <footer class="mt-8 text-center text-gray-500 text-sm">Love <span class="font-semibold text-purple-600">Umri</span></footer>
+  </div>
+
+  <!-- SCREEN 2: Birthday Message -->
+  <div id="screen2" class="hidden relative z-10 min-h-screen flex flex-col items-center justify-center p-4 sm:p-6" style="overflow-y: auto;">
+    <div class="max-w-2xl w-full text-center space-y-8 animate-fade-up">
+      <div class="relative inline-block">
+        <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#eab308" stroke-width="2" class="animate-bounce-in mx-auto"><path d="M5.8 11.3 2 22l10.7-3.79"/><path d="M4 3h.01"/><path d="M22 8h.01"/><path d="M15 2h.01"/><path d="M22 20h.01"/><path d="m22 2-2.24.75a2.9 2.9 0 0 0-1.96 3.12v0c.1.86-.57 1.63-1.45 1.63h-.38c-.86 0-1.6.6-1.76 1.44L14 10"/><path d="m22 13-.82-.33c-.86-.34-1.82.2-1.98 1.11v0c-.11.7-.72 1.22-1.43 1.22H17"/><path d="m11 2 .33.82c.34.86-.2 1.82-1.11 1.98v0C9.52 4.9 9 5.52 9 6.23V7"/><path d="M11 13c1.93 1.93 2.86 4.17 2 5-.93.83-3.17-.1-5-2-1.93-1.93-2.86-4.17-2-5 .93-.83 3.17.1 5 2Z"/></svg>
+        <div class="absolute -top-2 -right-2"><svg class="animate-pulse" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#ec4899" stroke="#ec4899" stroke-width="2"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg></div>
+      </div>
+      <div class="space-y-3">
+        <h1 class="text-3xl sm:text-5xl font-bold" style="background: linear-gradient(to right, #9333ea, #ec4899, #f43f5e); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; line-height:1.2;">Happy Birthday Qalbi</h1>
+        <div class="flex items-center justify-center gap-2">
+          <svg class="animate-heartbeat" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="#ec4899" stroke="#ec4899" stroke-width="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+          <svg class="animate-heartbeat" style="animation-delay:0.3s" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#f87171" stroke="#f87171" stroke-width="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+          <svg class="animate-heartbeat" style="animation-delay:0.6s" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="#fb7185" stroke="#fb7185" stroke-width="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+        </div>
+      </div>
+      <div class="glass-card rounded-2xl p-6 sm:p-8 text-left space-y-4">
+        <p class="text-base sm:text-lg text-gray-700 leading-relaxed">Happy Birthday to the love of my life.</p>
+        <p class="text-base sm:text-lg text-gray-700 leading-relaxed">Today is all about celebrating the amazing person you are. Thank you for bringing so much happiness, love, and peace into my life. Every moment with you is a blessing, and I'm grateful for every smile, every laugh, and every memory we've shared.</p>
+        <p class="text-base sm:text-lg text-gray-700 leading-relaxed">I pray this new year brings you endless joy, good health, success, and all the beautiful things your heart desires. May Almighty Allah continue to guide, protect, and bless you in every step you take.</p>
+        <p class="text-base sm:text-lg text-gray-700 leading-relaxed">You deserve all the love in the world, and I promise to keep loving, supporting, and cherishing you. Happy Birthday, my beautiful queen. I hope today is as special and wonderful as you are.</p>
+        <p class="text-lg sm:text-xl font-semibold text-center" style="background: linear-gradient(to right, #9333ea, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; padding-top:0.5rem;">I love you more than words can ever express.</p>
+      </div>
+      <div class="glass-card rounded-2xl p-6 sm:p-8 space-y-4">
+        <button id="giftBtn" class="btn-primary">
+          <span class="flex items-center justify-center gap-3">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+            Click to view your gift
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"/></svg>
+          </span>
+        </button>
+        <div id="giftReveal" class="hidden space-y-4 animate-fade-up">
+          <div class="flex items-center justify-center gap-3 mb-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#9333ea" stroke-width="2"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"/></svg>
+            <h2 class="text-xl sm:text-2xl font-bold text-gray-800">Your Birthday Gift</h2>
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="2"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"/></svg>
+          </div>
+          <img src="Gift.jpeg" alt="Your birthday gift" class="w-full rounded-xl shadow-lg animate-bounce-in" />
+        </div>
+      </div>
+    </div>
+    <footer class="mt-8 text-center text-gray-500 text-sm">Love <span class="font-semibold text-purple-600">Umri</span></footer>
+  </div>
+
+  <script>
+    // Floating Particles
+    (function() {
+      var container = document.getElementById('particles');
+      var colors = ['#a855f7', '#ec4899', '#f43f5e', '#6366f1', '#f59e0b'];
+      for (var i = 0; i < 20; i++) {
+        var dot = document.createElement('div');
+        var size = Math.random() * 12 + 6;
+        dot.className = 'absolute rounded-full opacity-20 animate-float';
+        dot.style.width = size + 'px';
+        dot.style.height = size + 'px';
+        dot.style.left = Math.random() * 100 + '%';
+        dot.style.top = Math.random() * 100 + '%';
+        dot.style.background = colors[i % 5];
+        dot.style.animationDuration = (Math.random() * 10 + 15) + 's';
+        dot.style.animationDelay = (Math.random() * 5) + 's';
+        container.appendChild(dot);
+      }
+    })();
+
+    // Audio
+    var bgMusic = document.getElementById('bgMusic');
+    var musicReady = false;
+
+    document.addEventListener('click', function initAudio() {
+      if (!musicReady) {
+        bgMusic.src = 'https://open.spotify.com/track/5GyaXqMfcIGHfmTUITFacS?si=e81c6e150d6940ac';
+        bgMusic.play().catch(function(){});
+        musicReady = true;
+      }
+      document.removeEventListener('click', initAudio);
+    });
+
+    document.getElementById('muteBtn').addEventListener('click', function() {
+      bgMusic.muted = !bgMusic.muted;
+      document.getElementById('volumeOn').classList.toggle('hidden');
+      document.getElementById('volumeOff').classList.toggle('hidden');
+      playClick();
+    });
+
+    function playClick() {
+      document.getElementById('clickSound').play().catch(function(){});
+    }
+
+    function playSuccess() {
+      document.getElementById('successSound').play().catch(function(){});
+    }
+
+    // Airdrop Claim Flow
+    var currentStep = 1;
+    var timeLeft = 10;
+    var timerInterval = null;
+
+    var VALID_ANSWERS = ['27th october','27 october','27th oct','27 oct','october 27','oct 27'];
+
+    function normalizeAnswer(s) {
+      return s.trim().toLowerCase().replace(/[,.\-]/g, ' ').replace(/\s+/g, ' ');
+    }
+
+    var birthdayInput = document.getElementById('birthdayInput');
+    var verifyBtn = document.getElementById('verifyBtn');
+    var answerError = document.getElementById('answerError');
+    var answerErrorText = document.getElementById('answerErrorText');
+
+    birthdayInput.addEventListener('input', function() {
+      var hasText = birthdayInput.value.trim().length > 0;
+      verifyBtn.disabled = !hasText;
+      answerError.classList.add('hidden');
+      answerError.classList.remove('flex');
+    });
+
+    birthdayInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && !verifyBtn.disabled) {
+        verifyBtn.click();
+      }
+    });
+
+    verifyBtn.addEventListener('click', function() {
+      var val = normalizeAnswer(birthdayInput.value);
+      if (VALID_ANSWERS.indexOf(val) !== -1) {
+        goToStep3();
+      } else {
+        answerErrorText.textContent = "You're not correct. Try again!";
+        answerError.classList.remove('hidden');
+        answerError.classList.add('flex');
+      }
+    });
+
+    document.getElementById('beginBtn').addEventListener('click', function() {
+      playClick();
+      currentStep = 2;
+
+      document.getElementById('step1Card').className = 'step-card completed';
+      document.getElementById('step1Icon').className = 'step-icon completed';
+      document.getElementById('step1Icon').innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>';
+      document.getElementById('step1Title').className = 'font-semibold text-sm sm:text-base text-green-700';
+      document.getElementById('step1Desc').className = 'text-xs sm:text-sm text-green-600';
+      document.getElementById('step1Chevron').classList.add('hidden');
+      document.getElementById('step1Check').classList.remove('hidden');
+
+      document.getElementById('step2Card').className = 'step-card active';
+      document.getElementById('step2Icon').className = 'step-icon active';
+      document.getElementById('step2Title').className = 'font-semibold text-sm sm:text-base text-gray-800';
+      document.getElementById('step2Desc').className = 'text-xs sm:text-sm text-gray-500';
+      document.getElementById('step2Chevron').classList.remove('hidden');
+
+      document.getElementById('step1Content').classList.add('hidden');
+      document.getElementById('step2Content').classList.remove('hidden');
+      birthdayInput.focus();
+    });
+
+    function goToStep3() {
+      playClick();
+      currentStep = 3;
+
+      document.getElementById('step2Card').className = 'step-card completed';
+      document.getElementById('step2Icon').className = 'step-icon completed';
+      document.getElementById('step2Icon').innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>';
+      document.getElementById('step2Title').className = 'font-semibold text-sm sm:text-base text-green-700';
+      document.getElementById('step2Desc').className = 'text-xs sm:text-sm text-green-600';
+      document.getElementById('step2Chevron').classList.add('hidden');
+      document.getElementById('step2Check').classList.remove('hidden');
+
+      document.getElementById('step3Card').className = 'step-card active';
+      document.getElementById('step3Icon').className = 'step-icon active';
+      document.getElementById('step3Title').className = 'font-semibold text-sm sm:text-base text-gray-800';
+      document.getElementById('step3Desc').className = 'text-xs sm:text-sm text-gray-500';
+      document.getElementById('step3Chevron').classList.remove('hidden');
+
+      document.getElementById('step2Content').classList.add('hidden');
+      document.getElementById('step3Content').classList.remove('hidden');
+
+      timeLeft = 10;
+      updateTimer();
+      timerInterval = setInterval(function() {
+        timeLeft--;
+        var pct = ((10 - timeLeft) / 10) * 100;
+        document.getElementById('progressFill').style.width = pct + '%';
+        updateTimer();
+        if (timeLeft <= 0) {
+          clearInterval(timerInterval);
+          playSuccess();
+          document.getElementById('screen1').classList.add('hidden');
+          document.getElementById('screen2').classList.remove('hidden');
+        }
+      }, 1000);
+    }
+
+    function updateTimer() {
+      var m = Math.floor(timeLeft / 60);
+      var s = (timeLeft % 60).toString().padStart(2, '0');
+      document.getElementById('timerText').textContent = 'Claiming in: ' + m + ':' + s;
+    }
+
+    document.getElementById('giftBtn').addEventListener('click', function() {
+      document.getElementById('giftBtn').classList.add('hidden');
+      document.getElementById('giftReveal').classList.remove('hidden');
+    });
+  </script>
+</body>
+</html>
